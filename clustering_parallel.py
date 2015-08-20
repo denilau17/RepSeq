@@ -26,17 +26,12 @@ def cluster_seqs(seqs,cutoff,linkage='single'):
     if len(seqs) == 0:
         return (np.array([]),{})
 
-    #collapses identical seqs
-    #unique_seqs = list(set(seqs))
-    #seq_idxs = dict( [(j,i) for (i,j) in enumerate(unique_seqs)] )
-
     #checks if there is only 1 unique seq
     if len(seqs) == 1:
         T = np.array([1]*len(seqs))
         return T
 
     #compute distance matrix
-    #Y = pdist( unique_seqs, clusteringcore.levenshtein )
     Y = pdist(seqs, clusteringcore.levenshtein)
     
     #compute linkage
@@ -44,7 +39,7 @@ def cluster_seqs(seqs,cutoff,linkage='single'):
 
     # determine the clusters at level cutoff
     T = sp.cluster.hierarchy.fcluster(Z,cutoff,criterion='distance')
-    #return (T,seq_idxs)
+
     return T
 
 #get list of subgroups for each pool of clonal assignments
@@ -63,16 +58,6 @@ def get_subgroup_seqs(c, subgroup):
     celltype = [x[1].encode('ascii', 'ignore') for x in results]
     cdr3_len = results[0][2]
     return [seqs, celltype, cdr3_len]
-
-#clusters a particular subgroup into clones with max edit distance of the CDR3 len 
-def assign_clones(c, subgroup):
-    seqs, celltype, cdr3_len = get_subgroup_seqs(c, subgroup)
-    seqs = list(set(seqs))
-    results = cluster_seqs(seqs, cdr3_len)
-    t = [int(x) for x in results]
-        
-    for i in range(len(t)):
-        rv.append([subgroup_list[1], t[i], celltype[i], seqs[i], cdr3_len])
 
 def clones(data):
     results = cluster_seqs(data[0], data[2])
