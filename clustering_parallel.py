@@ -59,11 +59,13 @@ def get_subgroup_seqs(c, subgroup):
     cdr3_len = results[0][2]
     return [seqs, celltype, cdr3_len]
 
+#group sequences into clones with max edit distance of the CDR3 length
 def clones(data):
     results = cluster_seqs(data[0], data[2])
     t = [int(x) for x in results]
     return t
 
+#format data to write to csv
 def format_data(subgroup_list, data, results):
     if len(data) != len(results):
         return []
