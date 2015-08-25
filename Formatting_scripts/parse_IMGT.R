@@ -158,3 +158,17 @@ write.csv(csv.012, file = "~/Documents/RepSeq2/IMGT_012.csv")
 
 csv.007 <- subset(df.out, df.out$subject == "007")
 write.csv(csv.007, file = "~/Documents/RepSeq2/IMGT_007.csv")
+
+
+#Make sqlite table
+db <- dbConnect(SQLite(), dbname="~/Documents/RepSeq2/IMGT_parsed.sqlite")
+dbWriteTable(conn = db, name = "IMGT_007", value = csv.007,
+             row.names = FALSE, overwrite = TRUE)
+dbWriteTable(conn = db, name = "IMGT_011", value = csv.011,
+             row.names = FALSE, overwrite = TRUE)
+dbWriteTable(conn = db, name = "IMGT_012", value = csv.012,
+             row.names = FALSE, overwrite = TRUE)
+
+dbDisconnect(db)
+
+
