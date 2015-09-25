@@ -23,6 +23,9 @@ mk_big_df <- function(fn.IMGT_1, fn.IMGT_2, fn.IMGT_4, cell.type){
   #add cell type
   df$cell_type <- cell.type
   
+  #get rid of duplicates
+  df <- unique(df)
+  
   return(df)
 }
 
@@ -139,34 +142,46 @@ df.mod <- subset(df.mod, df.mod$JGENE != "")
 df.mod$subgroup <- with(df.mod, paste0(VGENE, JGENE, CDR3_len))
 
 #remove sequences with no CDR3 length identified
-df.out <- subset(df.mod, df.mod$CDR3_len != "X")
+df.mod <- subset(df.mod, df.mod$CDR3_len != "X")
 
-#csv.011 <- subset(df.mod, df.mod$subject == "011")
-#write.csv(csv.011, file = "~/Documents/RepSeq/subgroup011.csv")
+#split by patient
+table.011 <- subset(df.mod, df.mod$subject == "011")
+table.012 <- subset(df.mod, df.mod$subject == "012")
+table.007 <- subset(df.mod, df.mod$subject == "007")
 
-#csv.012 <- subset(df.mod, df.mod$subject == "012")
-#write.csv(csv.012, file = "~/Documents/RepSeq/subgroup012.csv")
+#remove subgroups with only 1 sequence
+no.ones <- function(df.mod){
+  subgroup.list <- unique(df.mod$subgroup)
+  freq.subgroup <- table(df.mod$subgroup)
+  freq.subgroup <- as.data.frame(freq.subgroup)
+  f <- subset(freq.subgroup, freq.subgroup$Freq > 1)
+  no.ones <- f$Var1
+  df.mod <- df.mod[df.mod$subgroup %in% no.ones,]
+  return(df.mod)
+}
 
-#csv.007 <- subset(df.mod, df.mod$subject == "007")
-#write.csv(csv.007, file = "~/Documents/RepSeq/subgroup007.csv")
+table.011 <- no.ones(table.011)
+table.012 <- no.ones(table.012)
+table.007 <- no.ones(table.007)
 
-csv.011 <- subset(df.out, df.out$subject == "011")
+csv.011 <- subset(df.mod, df.mod$subject == "011")
 write.csv(csv.011, file = "~/Documents/RepSeq2/IMGT_011.csv")
 
-csv.012 <- subset(df.out, df.out$subject == "012")
+csv.012 <- subset(df.mod, df.mod$subject == "012")
 write.csv(csv.012, file = "~/Documents/RepSeq2/IMGT_012.csv")
 
-csv.007 <- subset(df.out, df.out$subject == "007")
+csv.007 <- subset(df.mod, df.mod$subject == "007")
 write.csv(csv.007, file = "~/Documents/RepSeq2/IMGT_007.csv")
 
 
 #Make sqlite table
+require(sqldf)
 db <- dbConnect(SQLite(), dbname="~/Documents/RepSeq2/IMGT_parsed.sqlite")
-dbWriteTable(conn = db, name = "IMGT_007", value = csv.007,
+dbWriteTable(conn = db, name = "IMGT_007", value = table.007,
              row.names = FALSE, overwrite = TRUE)
-dbWriteTable(conn = db, name = "IMGT_011", value = csv.011,
+dbWriteTable(conn = db, name = "IMGT_011", value = table.011,
              row.names = FALSE, overwrite = TRUE)
-dbWriteTable(conn = db, name = "IMGT_012", value = csv.012,
+dbWriteTable(conn = db, name = "IMGT_012", value = table.012,
              row.names = FALSE, overwrite = TRUE)
 
 dbDisconnect(db)
