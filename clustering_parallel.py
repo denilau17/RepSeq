@@ -44,7 +44,7 @@ def cluster_seqs(seqs,cutoff,linkage='single'):
 
 #get list of subgroups for each pool of clonal assignments
 def get_subgroups(c, subject):
-    query = "SELECT subgroup FROM " + subject + ";"
+    query = "SELECT subgroup, count(*) FROM " + subject + " GROUP BY subgroup ORDER BY count(*);"
     results = c.execute(query).fetchall()
     subgroup = [x[0].encode('ascii', 'ignore') for x in results]
     return subgroup
@@ -91,11 +91,9 @@ def main(db, subject, outfile):
     connection = sqlite3.connect(db)
     c = connection.cursor()
     
+    print "getting data to analyze"
     subgroup_list = get_subgroups(c, subject)
 
-    subgroup_list = list(set(subgroup_list))
-
-    subgroup_list = subgroup_list[0:200]
     data = []
     
     for subgroup in subgroup_list:
@@ -104,6 +102,7 @@ def main(db, subject, outfile):
 
     pool = mp.Pool(processes=4)
 
+    print "assigning clones"
     results = pool.map(clones, data)
 
     rv = format_data(subgroup_list, data, results)
@@ -116,7 +115,7 @@ def main(db, subject, outfile):
 
 if __name__ == "__main__":
     db = '/Users/denise/Documents/RepSeq2/IMGT_parsed.sqlite'
-    subject = 'IMGT_007'
-    outfile = '/Users/denise/Documents/RepSeq2/clones_007.csv'
+    subject = 'IMGT_012'
+    outfile = '/Users/denise/Documents/RepSeq2/clones_012_3001_4000.csv'
 
     main(db, subject, outfile)
