@@ -2,10 +2,8 @@
 library(ape)
 library(dplyr)
 
-setwd("~/Documents/RepSeq2/trees/test_trees/")
-
 #setup database 
-my_db <- src_sqlite("test.sqlite3", create = T)
+my_db <- src_sqlite("~/Documents/RepSeq2/trees/clone_dist.sqlite", create = T)
 dist <- c("NA", "NA", "NA", "NA", "NA")
 names(dist) <- c("cell1", "cell2", "dist", "clone", "sample")
 dist <- as.data.frame(t(dist))
@@ -38,7 +36,19 @@ get_dist <- function(f, db, sample){
 }
 
 #get all bestTree filenames
+setwd("~/Documents/RepSeq2/trees/bestTree_011/")
 filenames <- dir(getwd(), "*.phy")
 #apply get_dist function to all bestTree files 
 lapply(filenames, get_dist, db=my_db, sample="011")
+
+#get 007 files
+setwd("~/Documents/RepSeq2/trees/bestTree_007/")
+filenames <- dir(getwd(), "*.phy")
+lapply(filenames, get_dist, db=my_db, sample="007")
+
+#get 012 files
+setwd("~/Documents/RepSeq2/trees/bestTree_012/")
+filenames <- dir(getwd(), "*.phy")
+lapply(filenames, get_dist, db=my_db, sample="012")
+
 
